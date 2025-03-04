@@ -14,7 +14,6 @@ const mostrarFormulario = ref(false);
 const toggleFormulario = () => {
   mostrarFormulario.value = !mostrarFormulario.value;
 };
-
 const cargarTareas = async () => {
   try {
     const response = await tomarTareas();
@@ -30,7 +29,6 @@ onMounted(() => {
   const temaGuardado = localStorage.getItem("tema");
   temaStore.cambiarTema(temaGuardado === "light" || temaGuardado === "dark" ? temaGuardado : "dark");
 });
-
 // ✅ Computed para filtrar tareas sin errores
 const tareasFiltradas = computed(() => {
   return tareas.value.filter(tarea => {
@@ -45,8 +43,8 @@ const agregarTarea = async (titulo: string, descripcion: string) => {
   try {
     const nuevaTarea = await guardarTarea(titulo, descripcion);
     if (nuevaTarea) {
+      tareas.value.push(nuevaTarea); // Se agrega directamente sin recargar la API
       mostrarFormulario.value = false; // Cierra el formulario después de agregar
-      cargarTareas(); // Vuelve a cargar las tareas desde la API
       console.log("Tarea agregada:", nuevaTarea);
     }
   } catch (error) {
@@ -54,13 +52,14 @@ const agregarTarea = async (titulo: string, descripcion: string) => {
   }
 };
 
-// ✅ Eliminar tarea y recargar lista automáticamente
+
+
 const eliminarTareaDeLista = async (tareaId: number) => {
   try {
     const status = await eliminarTarea(tareaId);
     if (status === 200 || status === 204) {
-      cargarTareas(); // Vuelve a cargar las tareas desde la API
-      console.log("Tarea eliminada, lista recargada.");
+      tareas.value = tareas.value.filter(tarea => tarea.id !== tareaId);
+      console.log("Tarea eliminada, lista actualizada.");
     }
   } catch (error) {
     console.error("Error al eliminar tarea:", error);
@@ -70,6 +69,15 @@ const eliminarTareaDeLista = async (tareaId: number) => {
 
 
 provide("tareasInterfazRef", { eliminarTareaDeLista });
+
+// ✅ Actualizar estado sin recargar
+const actualizarEstadoTarea = (tareaActualizada: Tarea) => {
+  const index = tareas.value.findIndex(t => t.id === tareaActualizada.id);
+  if (index !== -1) {
+    tareas.value[index] = tareaActualizada;
+  }
+};
+
 
 // 📌 Funcionalidad Drag and Drop
 const onDragStart = (event: DragEvent, tareaId: number) => {
@@ -135,7 +143,11 @@ const cambiarTema = () => {
         @dragover.prevent
         @drop="(event) => onDrop(event, tarea)"
         class="tarea-container">
-        <tareaBloque :tarea="tarea" @cambiarEstado="cargarTareas" @actualizarLista="eliminarTareaDeLista" />
+        <tareaBloque 
+          :tarea="tarea" 
+          @cambiarEstado="actualizarEstadoTarea" 
+          @actualizarLista="eliminarTareaDeLista" 
+        />
       </div>
     </div>
 

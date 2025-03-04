@@ -20,14 +20,10 @@ const guardar = async () => {
 
     const nuevaTarea = await guardarTarea(titulo.value, descripcion.value || "");
 
-    if (nuevaTarea) { // Si la API devuelve la tarea creada correctamente
+    if (nuevaTarea) {
       toast.success("Tarea guardada con éxito!");
-      
-      // Emitir evento para agregar la tarea a la lista en tiempo real
-      emit("nuevaTarea", nuevaTarea);
-      emit("cerrar");
 
-      // Limpiar el formulario
+      emit("nuevaTarea", nuevaTarea); // Sigue emitiendo el evento
       titulo.value = "";
       descripcion.value = "";
     } else {

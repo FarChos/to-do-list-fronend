@@ -80,6 +80,8 @@ const GuardarEstado = async () => {
       <input v-else v-model="tituloTemporal" @blur="guardarEdicion" />
     </div>
 
+    
+
     <div @dblclick="activarEdicion">
       <span v-if="!editando">{{ descripcionTemporal }}</span>
       <textarea v-else v-model="descripcionTemporal" @blur="guardarEdicion"></textarea>
