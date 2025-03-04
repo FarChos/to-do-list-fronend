@@ -3,7 +3,7 @@ import { ref, onMounted, computed, provide } from "vue";
 import tareaBloque from '../components/tarea.vue';
 import formularioTarea from '../components/formularioNuevaTarea.vue';
 import { Tarea } from "../utils/tipos";
-import { tomarTareas } from "../utils/peticiones";
+import { tomarTareas, guardarTarea, eliminarTarea } from "../utils/peticiones";
 import { useTemaStore, useFiltroStore } from "../stores/estadoGlobal";
 
 const temaStore = useTemaStore();
@@ -17,7 +17,9 @@ const toggleFormulario = () => {
 
 const cargarTareas = async () => {
   try {
-    tareas.value = await tomarTareas();
+    const response = await tomarTareas();
+    tareas.value = response || []; // Aseguramos que sea un array válido
+    console.log("Tareas recargadas:", tareas.value);
   } catch (error) {
     console.error("Error al obtener las tareas:", error);
   }
@@ -29,6 +31,7 @@ onMounted(() => {
   temaStore.cambiarTema(temaGuardado === "light" || temaGuardado === "dark" ? temaGuardado : "dark");
 });
 
+// ✅ Computed para filtrar tareas sin errores
 const tareasFiltradas = computed(() => {
   return tareas.value.filter(tarea => {
     if (filtroStore.filtro === "todas") return true;
@@ -36,13 +39,35 @@ const tareasFiltradas = computed(() => {
   });
 });
 
-const agregarTarea = (nuevaTarea: Tarea) => {
-  tareas.value.push(nuevaTarea);
+
+// ✅ Agregar tarea y recargar lista automáticamente
+const agregarTarea = async (titulo: string, descripcion: string) => {
+  try {
+    const nuevaTarea = await guardarTarea(titulo, descripcion);
+    if (nuevaTarea) {
+      mostrarFormulario.value = false; // Cierra el formulario después de agregar
+      cargarTareas(); // Vuelve a cargar las tareas desde la API
+      console.log("Tarea agregada:", nuevaTarea);
+    }
+  } catch (error) {
+    console.error("Error al agregar tarea:", error);
+  }
 };
 
-const eliminarTareaDeLista = (tareaId: number) => {
-  tareas.value = tareas.value.filter(t => t.id !== tareaId);
+// ✅ Eliminar tarea y recargar lista automáticamente
+const eliminarTareaDeLista = async (tareaId: number) => {
+  try {
+    const status = await eliminarTarea(tareaId);
+    if (status === 200 || status === 204) {
+      cargarTareas(); // Vuelve a cargar las tareas desde la API
+      console.log("Tarea eliminada, lista recargada.");
+    }
+  } catch (error) {
+    console.error("Error al eliminar tarea:", error);
+  }
 };
+
+
 
 provide("tareasInterfazRef", { eliminarTareaDeLista });
 
@@ -70,13 +95,7 @@ const cambiarTema = () => {
   temaStore.cambiarTema(nuevoTema);
   localStorage.setItem("tema", nuevoTema);
 };
-
-// Exponer la función para que otros componentes puedan acceder a ella
-defineExpose({
-  eliminarTareaDeLista
-});
 </script>
-
 
 <template>
   <div class="flex flex-row justify-center h-20 text-center"
@@ -103,11 +122,9 @@ defineExpose({
 
   <div class="flex flex-col items-center p-5 h-full gap-4"
     :class="temaStore.tema === 'light' ? 'bg-amber-400' : 'bg-slate-500'">
-
     <button v-if="!mostrarFormulario" @click="toggleFormulario" class="boton-agregar">
       Agregar nueva tarea
     </button>
-
     <formularioTarea v-if="mostrarFormulario" @cerrar="toggleFormulario" @nuevaTarea="agregarTarea" />
 
     <!-- Lista de tareas con Drag and Drop -->
@@ -121,6 +138,7 @@ defineExpose({
         <tareaBloque :tarea="tarea" @cambiarEstado="cargarTareas" @actualizarLista="eliminarTareaDeLista" />
       </div>
     </div>
+
 
     <p v-else class="text-center text-lg font-mono mt-6"
       :class="temaStore.tema === 'light' ? 'text-gray-800' : 'text-gray-300'">

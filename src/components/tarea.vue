@@ -21,12 +21,18 @@ watch(() => props.tarea, (nuevaTarea) => {
 }, { deep: true });
 
 const borrar = async () => {
-  const status = await eliminarTarea(props.tarea.id);
-  if (status === 200 || status === 204) {
-    tareasInterfazRef?.eliminarTareaDeLista(props.tarea.id);
-    emit("actualizarLista");
-  } else {
-    console.error("No se pudo eliminar la tarea.");
+  try {
+    const status = await eliminarTarea(props.tarea.id);
+    if (status === 200 || status === 204) {
+      tareasInterfazRef?.eliminarTareaDeLista(props.tarea.id);
+      emit("actualizarLista");
+      toast.success("Tarea eliminada correctamente");
+    } else {
+      throw new Error("Error al eliminar la tarea");
+    }
+  } catch (error) {
+    console.error("No se pudo eliminar la tarea.", error);
+    toast.error("Error al eliminar la tarea");
   }
 };
 
@@ -37,34 +43,35 @@ const activarEdicion = () => {
 const guardarEdicion = async () => {
   try {
     const respuesta = await actualizarTarea(props.tarea.id, tituloTemporal.value, descripcionTemporal.value);
-    if (typeof respuesta === "number" && respuesta === 200) {
+    if (respuesta === 200) {
       toast.success("Tarea actualizada");
       editando.value = false;
       emit("actualizarLista");
     } else {
-      toast.error("Error al actualizar");
+      throw new Error("Error al actualizar la tarea");
     }
-  } catch {
-    toast.error("Error en la conexión");
+  } catch (error) {
+    console.error("Error en la actualización", error);
+    toast.error("Error al actualizar la tarea");
   }
 };
 
 const GuardarEstado = async () => {
   try {
     const respuesta = await actualizarEstado(props.tarea.id, estado.value);
-    if (typeof respuesta === "number" && respuesta === 200) {
+    if (respuesta === 200) {
       toast.success("Estado actualizado");
       emit("cambiarEstado", { ...props.tarea, completed: estado.value });
       emit("actualizarLista");
     } else {
-      toast.error("Error al actualizar estado");
+      throw new Error("Error al actualizar estado");
     }
-  } catch {
-    toast.error("Error en la conexión");
+  } catch (error) {
+    console.error("Error al actualizar el estado", error);
+    toast.error("Error al actualizar estado");
   }
 };
 </script>
-
 
 <template>
   <div class="tarea">
@@ -84,6 +91,7 @@ const GuardarEstado = async () => {
     <button @click="borrar">Eliminar</button>
   </div>
 </template>
+
 
 <style scoped>
 .tarea {
