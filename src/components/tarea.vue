@@ -7,7 +7,7 @@ import { useToast } from "vue-toastification";
 const tareasInterfazRef = inject<{ eliminarTareaDeLista: (id: number) => void }>("tareasInterfazRef");
 const toast = useToast();
 const props = defineProps<{ tarea: Tarea }>();
-const emit = defineEmits(["cambiarEstado", "actualizarLista"]);
+const emit = defineEmits(["cambiarEstado", "actualizarLista", "eliminarTarea"]);
 
 const editando = ref(false);
 const tituloTemporal = ref(props.tarea.titulo);
@@ -25,7 +25,7 @@ const borrar = async () => {
     const status = await eliminarTarea(props.tarea.id);
     if (status === 200 || status === 204) {
       tareasInterfazRef?.eliminarTareaDeLista(props.tarea.id);
-      emit("actualizarLista");
+      emit('eliminarTarea', props.tarea.id); 
       toast.success("Tarea eliminada correctamente");
     } else {
       throw new Error("Error al eliminar la tarea");
@@ -79,8 +79,6 @@ const GuardarEstado = async () => {
       <span v-if="!editando">{{ tituloTemporal }}</span>
       <input v-else v-model="tituloTemporal" @blur="guardarEdicion" />
     </div>
-
-    
 
     <div @dblclick="activarEdicion">
       <span v-if="!editando">{{ descripcionTemporal }}</span>

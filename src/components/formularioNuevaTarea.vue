@@ -3,10 +3,11 @@ import { defineEmits, ref } from "vue";
 import { guardarTarea } from "../utils/peticiones";
 import { useToast } from "vue-toastification";
 import { useTemaStore } from "../stores/estadoGlobal";
+import { Tarea } from "../utils/tipos";
 
 const toast = useToast();
 const temaStore = useTemaStore();
-const emit = defineEmits(["cerrar", "nuevaTarea"]);
+const emit = defineEmits(["cerrar", "agregarTarea"]);
 
 const descripcion = ref("");
 const titulo = ref("");
@@ -18,12 +19,11 @@ const guardar = async () => {
       return;
     }
 
-    const nuevaTarea = await guardarTarea(titulo.value, descripcion.value || "");
+    const nuevaTarea : Tarea | null = await guardarTarea(titulo.value, descripcion.value);
 
-    if (nuevaTarea) {
+    if (nuevaTarea !== null) {
       toast.success("Tarea guardada con éxito!");
-
-      emit("nuevaTarea", nuevaTarea); // Sigue emitiendo el evento
+      emit("agregarTarea", nuevaTarea); // Sigue emitiendo el evento
       titulo.value = "";
       descripcion.value = "";
     } else {

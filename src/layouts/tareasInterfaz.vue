@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, provide } from "vue";
+import { ref, onMounted, computed } from "vue";
 import tareaBloque from '../components/tarea.vue';
 import formularioTarea from '../components/formularioNuevaTarea.vue';
 import { Tarea } from "../utils/tipos";
-import { tomarTareas, guardarTarea, eliminarTarea } from "../utils/peticiones";
+import { tomarTareas } from "../utils/peticiones";
 import { useTemaStore, useFiltroStore } from "../stores/estadoGlobal";
 
 const temaStore = useTemaStore();
@@ -29,19 +29,22 @@ onMounted(() => {
   const temaGuardado = localStorage.getItem("tema");
   temaStore.cambiarTema(temaGuardado === "light" || temaGuardado === "dark" ? temaGuardado : "dark");
 });
-// ✅ Computed para filtrar tareas sin errores
+// ✅ Computed para filtrar tareas 
 const tareasFiltradas = computed(() => {
   return tareas.value.filter(tarea => {
     if (filtroStore.filtro === "todas") return true;
+    console.log("oyeme!! esto es un filtro")
     return tarea.completed === (filtroStore.filtro === "completadas");
   });
 });
 
+const eliminarTareaDOM = (tareaId: number) => {
+    tareas.value = tareas.value.filter(tarea => tarea.id !== tareaId)
+};
 
 // ✅ Agregar tarea y recargar lista automáticamente
-const agregarTarea = async (titulo: string, descripcion: string) => {
+const agregarTarea = async (nuevaTarea : Tarea) => {
   try {
-    const nuevaTarea = await guardarTarea(titulo, descripcion);
     if (nuevaTarea) {
       tareas.value.push(nuevaTarea); // Se agrega directamente sin recargar la API
       mostrarFormulario.value = false; // Cierra el formulario después de agregar
@@ -51,24 +54,6 @@ const agregarTarea = async (titulo: string, descripcion: string) => {
     console.error("Error al agregar tarea:", error);
   }
 };
-
-
-
-const eliminarTareaDeLista = async (tareaId: number) => {
-  try {
-    const status = await eliminarTarea(tareaId);
-    if (status === 200 || status === 204) {
-      tareas.value = tareas.value.filter(tarea => tarea.id !== tareaId);
-      console.log("Tarea eliminada, lista actualizada.");
-    }
-  } catch (error) {
-    console.error("Error al eliminar tarea:", error);
-  }
-};
-
-
-
-provide("tareasInterfazRef", { eliminarTareaDeLista });
 
 // ✅ Actualizar estado sin recargar
 const actualizarEstadoTarea = (tareaActualizada: Tarea) => {
@@ -133,7 +118,7 @@ const cambiarTema = () => {
     <button v-if="!mostrarFormulario" @click="toggleFormulario" class="boton-agregar">
       Agregar nueva tarea
     </button>
-    <formularioTarea v-if="mostrarFormulario" @cerrar="toggleFormulario" @nuevaTarea="agregarTarea" />
+    <formularioTarea v-if="mostrarFormulario" @cerrar="toggleFormulario" @agregarTarea="agregarTarea" />
 
     <!-- Lista de tareas con Drag and Drop -->
     <div v-if="tareasFiltradas.length > 0" class="w-full max-w-3xl p-4">
@@ -144,9 +129,9 @@ const cambiarTema = () => {
         @drop="(event) => onDrop(event, tarea)"
         class="tarea-container">
         <tareaBloque 
-          :tarea="tarea" 
+          :tarea="tarea"
           @cambiarEstado="actualizarEstadoTarea" 
-          @actualizarLista="eliminarTareaDeLista" 
+          @eliminarTarea="eliminarTareaDOM"
         />
       </div>
     </div>
