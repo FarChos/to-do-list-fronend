@@ -91,31 +91,41 @@ const cambiarTema = () => {
 </script>
 
 <template>
-  <div class="flex flex-row justify-center h-20 text-center"
+  <div class="flex flex-row justify-center items-center h-20 text-center"
     :class="temaStore.tema === 'light' ? 'bg-amber-100' : 'bg-slate-800'">
     <h1 class="text-6xl font-mono"
       :class="temaStore.tema === 'light' ? 'text-amber-800' : 'text-slate-100'">
       Lista de tareas
     </h1>
     <button @click="cambiarTema"
-      class="p-2 rounded shadow ml-5"
+      class="p-2 rounded shadow ml-5 h-10"
       :class="temaStore.tema === 'light' ? 'text-amber-600 bg-amber-50 hover:bg-amber-200' : 'text-slate-50 bg-slate-900 hover:bg-slate-700'">
-      Cambiar Tema
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+      </svg>
+
     </button>
   </div>
 
   <div class="flex justify-center bg-amber-200 h-12" 
     :class="temaStore.tema === 'light' ? 'bg-amber-200' : 'bg-slate-700'">
     <nav class="flex justify-center items-center gap-6 w-1/3">
-      <button @click="filtroStore.cambiarFiltro('todas')" class="boton-filtro">TODAS</button>
-      <button @click="filtroStore.cambiarFiltro('incompletas')" class="boton-filtro">INCOMPLETAS</button>
-      <button @click="filtroStore.cambiarFiltro('completadas')" class="boton-filtro">COMPLETAS</button>
+      <button @click="filtroStore.cambiarFiltro('todas')" class="font-mono font-bold text-lg rounded border-2 h-5/6 w-2/6"
+      :class="temaStore.tema === 'light' ? 'bg-amber-100 border-amber-900 text-amber-900 active:text-amber-100 active:bg-amber-900 active:border-amber-50' : 'border-slate-50 text-slate-50 bg-slate-800 active:text-slate-800 active:bg-slate-50 active:border-slate-800'"
+      >TODAS</button>
+      <button @click="filtroStore.cambiarFiltro('incompletas')" class="font-mono font-bold text-lg rounded border-2 h-5/6 w-2/6"
+      :class="temaStore.tema === 'light' ? 'bg-amber-100 border-amber-900 text-amber-900 active:text-amber-100 active:bg-amber-900 active:border-amber-50' : 'border-slate-50 text-slate-50 bg-slate-800 active:text-slate-800 active:bg-slate-50 active:border-slate-800'">INCOMPLETAS</button>
+      <button @click="filtroStore.cambiarFiltro('completadas')" class="font-mono font-bold text-lg rounded border-2 h-5/6 w-2/6"
+      :class="temaStore.tema === 'light' ? 'bg-amber-100 border-amber-900 text-amber-900 active:text-amber-100 active:bg-amber-900 active:border-amber-50' : 'border-slate-50 text-slate-50 bg-slate-800 active:text-slate-800 active:bg-slate-50 active:border-slate-800'">COMPLETAS</button>
     </nav>
   </div>
 
   <div class="flex flex-col items-center p-5 h-full gap-4"
     :class="temaStore.tema === 'light' ? 'bg-amber-400' : 'bg-slate-500'">
-    <button v-if="!mostrarFormulario" @click="toggleFormulario" class="boton-agregar">
+    <button v-if="!mostrarFormulario" @click="toggleFormulario" 
+        class="rounded font-mono p-2 hover:scale-105  transition-transform duration-300 "
+        :class="temaStore.tema === 'light' ? 'bg-amber-800 text-amber-100 hover:bg-amber-900' : 'bg-slate-200 text-slate-800 hover:bg-slate-50'"
+    >
       Agregar nueva tarea
     </button>
     <formularioTarea v-if="mostrarFormulario" @cerrar="toggleFormulario" @agregarTarea="agregarTarea" />
@@ -156,23 +166,9 @@ const cambiarTema = () => {
   background: rgba(255, 255, 255, 0.2);
 }
 
-.boton-agregar {
-  padding: 10px 20px;
-  font-size: 18px;
-  font-weight: bold;
-  border-radius: 10px;
-  background: #007BFF;
-  color: white;
-  transition: background 0.3s;
-}
-
-.boton-agregar:hover {
-  background: #0056b3;
-}
-
 .tarea-container {
   width: 90%;
-  max-width: 600px;
+  max-width: 900px;
   background: rgba(0, 0, 0, 0.1);
   padding: 10px;
   border-radius: 8px;
